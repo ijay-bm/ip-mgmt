@@ -1,5 +1,22 @@
 name: ip-mgmt
 
 services:
+  mariadb:
+    image: mariadb:11.4
+    container_name: ip-mgmt-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      AUTH_DB: auth_db
+      AUTH_USER: auth_user
+      AUTH_PASS: auth_password
+      IP_MANAGEMENT_DB: ip_management_db
+      IP_MANAGEMENT_USER: ip_management_user
+      IP_MANAGEMENT_PASS: ip_management_password
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    ports:
+      - "3306:3306"
 
 volumes:
+  mariadb_data:
