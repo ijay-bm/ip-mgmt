@@ -19,7 +19,7 @@ class IpAddressPolicy
 
         return (int) $user->id === (int) $ipAddress->user_id
             ? Response::allow()
-            : Response::deny(__('auth.ip_address.not_owner'));
+            : Response::deny(__('ip_address.not_owner'));
     }
 
     /**
@@ -27,6 +27,6 @@ class IpAddressPolicy
      */
     public function delete(User $user, IpAddress $ipAddress): Response
     {
-        return $user->isSuperAdmin() ? Response::allow() : Response::deny(__('auth.ip_address.cannot_delete'));
+        return $user->isSuperAdmin() ? Response::allow() : Response::deny(__('ip_address.cannot_delete'));
     }
 }

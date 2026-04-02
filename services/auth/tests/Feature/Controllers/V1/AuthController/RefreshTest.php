@@ -12,14 +12,20 @@ class RefreshTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_refresh_token(): void
+    private User $user;
+
+    public function setUp(): void
     {
-        $user = User::factory()->create([
+        parent::setUp();
+        $this->user = User::factory()->create([
             'name' => 'John Doe',
             'email' => 'john@doe.com',
         ]);
+    }
 
-        $token = JWTAuth::fromUser($user);
+    public function test_authenticated_user_can_refresh_token(): void
+    {
+        $token = JWTAuth::fromUser($this->user);
 
         $this->withToken($token)
             ->postJson(route('refresh'))
@@ -27,15 +33,15 @@ class RefreshTest extends TestCase
             ->assertJsonStructure(['access_token', 'token_type', 'expires_in']);
     }
 
+    public function test_unauthenticated_user_cant_refresh_token(): void
+    {
+        $this->postJson(route('refresh'))->assertUnauthorized();
+    }
+
     public function test_using_old_token_throws_error_for_general_routes(): void
     {
-        $user = User::factory()->create([
-            'name' => 'John Doe',
-            'email' => 'john@doe.com',
-        ]);
-
         $token = $this->postJson(route('login'), [
-            'email' => $user->email,
+            'email' => $this->user->email,
             'password' => 'password',
         ])
             ->assertOk()
@@ -50,18 +56,40 @@ class RefreshTest extends TestCase
         JWTAuth::setToken($token)->checkOrFail();
     }
 
-    public function test_token_expires_after_one_hour_for_general_routes(): void
+    public function test_token_is_invalid_after_expiration(): void
     {
-        Carbon::setTestNow('2026-04-01 01:00:00');
+        $now = Carbon::parse('2026-04-01 01:00:00');
+        Carbon::setTestNow($now);
 
-        $user = User::factory()->create([
-            'name' => 'John Doe',
-            'email' => 'john@doe.com',
-        ]);
+        $token = JWTAuth::fromUser($this->user);
 
-        $token = JWTAuth::fromUser($user);
+        Carbon::setTestNow($now->clone()->addHours((int) config('jwt.ttl')));
 
-        Carbon::setTestNow('2026-04-01 02:00:01');
+        $this->withToken($token)->getJson(route('me'))->assertUnauthorized();
+    }
+
+    public function test_token_can_be_refreshed_after_expiration_if_within_refresh_window(): void
+    {
+        $now = Carbon::parse('2026-04-01 01:00:00');
+        Carbon::setTestNow($now);
+
+        $token = JWTAuth::fromUser($this->user);
+
+        Carbon::setTestNow($now->clone()->addMinutes((int) config('jwt.ttl') + 1));
+
+        $this->withToken($token)->getJson(route('me'))->assertUnauthorized();
+
+        $this->withToken($token)->postJson(route('refresh'))->assertOk();
+    }
+
+    public function test_token_cannot_be_refreshed_after_expiration_if_outside_refresh_window(): void
+    {
+        $now = Carbon::parse('2026-04-01 01:00:00');
+        Carbon::setTestNow($now);
+
+        $token = JWTAuth::fromUser($this->user);
+
+        Carbon::setTestNow($now->clone()->addMinutes((int) config('jwt.refresh_ttl') + 1));
 
         $this->withToken($token)->getJson(route('me'))->assertUnauthorized();
     }

@@ -56,7 +56,7 @@ php artisan key:generate
 # Run database migrations
 php artisan migrate
 
-# Seed the database (for email:test@example.com and password:password and other sample records)
+# Seed the database (for users and roles. See DatabaseSeeder.php)
 php artisan db:seed
 ```
 
@@ -79,6 +79,7 @@ composer install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate
+# Seed the database (for IP records)
 php artisan db:seed
 ```
 

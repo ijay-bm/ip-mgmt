@@ -12,8 +12,11 @@ return [
     |
     */
 
-    'ip_address' => [
-        'not_owner' => 'You do not have permission to modify this IP address record.',
-        'cannot_delete' => 'You do not have permission to delete this IP address record.',
+    'failed' => 'These credentials do not match our records.',
+    'password' => 'The provided password is incorrect.',
+    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+
+    'token' => [
+        'cannot_refresh' => 'Token cannot be refreshed',
     ],
 ];
