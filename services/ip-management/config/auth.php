@@ -1,9 +1,6 @@
 <?php
 
-use App\Models\User;
-
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults
@@ -16,7 +13,7 @@ return [
     */
 
     'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
+        'guard' => env('AUTH_GUARD', 'api'),
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
     ],
 
@@ -42,6 +39,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'api' => [
+            'driver' => 'jwt',
+            'provider' => 'users',
+        ],
     ],
 
     /*
@@ -63,8 +65,9 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', User::class),
+            // 'driver' => 'eloquent',
+            // 'model' => env('AUTH_MODEL', User::class),
+            'driver' => 'jwt-user',
         ],
 
         // 'users' => [
@@ -113,5 +116,4 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
-
 ];

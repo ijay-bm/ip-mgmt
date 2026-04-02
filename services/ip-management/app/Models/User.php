@@ -2,31 +2,51 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Arr;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User implements Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    public $id;
+    public $email;
+    public $name;
+    public $roles = []; // TODO placeholder
+    public $permissions = []; // TODO placeholder
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    public function __construct(array $attributes = [])
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        $this->id = Arr::get($attributes, 'id', Arr::get($attributes, 'sub'));
+        $this->email = Arr::get($attributes, 'email');
+        $this->name = Arr::get($attributes, 'name');
+        $this->roles = Arr::get($attributes, 'roles', []); // TODO placeholder
+        $this->permissions = Arr::get($attributes, 'permissions', []); // TODO placeholder
+    }
+
+    public function getAuthIdentifierName()
+    {
+        return 'id';
+    }
+    public function getAuthIdentifier()
+    {
+        return $this->id;
+    }
+
+    public function getAuthPasswordName()
+    {
+        return '';
+    }
+    public function getAuthPassword()
+    {
+        return '';
+    }
+
+    public function getRememberToken()
+    {
+        return '';
+    }
+    public function setRememberToken($value) {}
+    public function getRememberTokenName()
+    {
+        return '';
     }
 }

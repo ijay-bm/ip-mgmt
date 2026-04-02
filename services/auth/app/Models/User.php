@@ -50,8 +50,8 @@ class User extends Authenticatable implements JWTSubject
             'id' => $this->getKey(),
             'name' => $this->name,
             'email' => $this->email,
-            'roles' => [], // TODO
-            'permissions' => [], // TODO
+            'roles' => [], // TODO placeholder
+            'permissions' => [], // TODO placeholder
         ];
     }
 }
