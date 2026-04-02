@@ -1,7 +1,7 @@
 {
-    "phpunit.phpunit": "services/auth/vendor/bin/phpunit",
+    "phpunit.phpunit": "services/ip-management/vendor/bin/phpunit",
     "phpunit.args": [
-        "-c", "services/auth/phpunit.xml"
+        "-c", "services/ip-management/phpunit.xml"
     ],
-    "php-test-explorer.phpunit": "services/auth/vendor/bin/phpunit"
+    "php-test-explorer.phpunit": "services/ip-management/vendor/bin/phpunit"
 }

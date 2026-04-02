@@ -1,0 +1,27 @@
+info:
+  name: / [store]
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{URL}}{{IP_MANAGEMENT_SERVICE_PATH}}/ip-addresses"
+  body:
+    type: multipart-form
+    data:
+      - name: ip_address
+        type: text
+        value: 127.0.0.3
+      - name: label
+        type: text
+        value: Test
+      - name: comment
+        type: text
+        value: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

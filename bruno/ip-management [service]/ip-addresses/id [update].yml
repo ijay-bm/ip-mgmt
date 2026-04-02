@@ -1,0 +1,29 @@
+info:
+  name: /id [update]
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{URL}}{{IP_MANAGEMENT_SERVICE_PATH}}/ip-addresses/{{id}}"
+  body:
+    type: multipart-form
+    data:
+      - name: label
+        type: text
+        value: New Label
+      - name: comment
+        type: text
+        value: ""
+  auth: inherit
+
+runtime:
+  variables:
+    - name: id
+      value: "2"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

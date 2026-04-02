@@ -10,22 +10,21 @@ class User implements Authenticatable
     public $id;
     public $email;
     public $name;
-    public $roles = []; // TODO placeholder
-    public $permissions = []; // TODO placeholder
+    public $roles = [];
 
     public function __construct(array $attributes = [])
     {
         $this->id = Arr::get($attributes, 'id', Arr::get($attributes, 'sub'));
         $this->email = Arr::get($attributes, 'email');
         $this->name = Arr::get($attributes, 'name');
-        $this->roles = Arr::get($attributes, 'roles', []); // TODO placeholder
-        $this->permissions = Arr::get($attributes, 'permissions', []); // TODO placeholder
+        $this->roles = Arr::get($attributes, 'roles', []);
     }
 
     public function getAuthIdentifierName()
     {
         return 'id';
     }
+
     public function getAuthIdentifier()
     {
         return $this->id;
@@ -35,6 +34,7 @@ class User implements Authenticatable
     {
         return '';
     }
+
     public function getAuthPassword()
     {
         return '';
@@ -44,9 +44,16 @@ class User implements Authenticatable
     {
         return '';
     }
+
     public function setRememberToken($value) {}
+
     public function getRememberTokenName()
     {
         return '';
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return in_array('super-admin', $this->roles);
     }
 }

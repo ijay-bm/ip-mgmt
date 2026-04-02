@@ -1,15 +1,8 @@
 <?php
 
+use App\Http\Controllers\V1\IpAddressController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/public-test', function () {
-    return response()->json([
-        'message' => 'Hello World!',
-    ]);
-});
-
 Route::middleware('auth:api')->group(function () {
-    Route::get('/private-test', function () {
-        return response()->json(auth()->user());
-    });
+    Route::resource('/ip-addresses', IpAddressController::class);
 });

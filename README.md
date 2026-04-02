@@ -68,7 +68,29 @@ php artisan serve --port=8000
 
 ---
 
-## 3. JWT Configuration (`tymon/jwt-auth`)
+## 3. IP Management Service Setup
+
+A second independent Laravel application with its own database.
+
+```bash
+cd services/ip-management
+
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+```
+
+### Running the IP Management Service
+
+```bash
+php artisan serve --port=8001
+```
+
+---
+
+## 4. JWT Configuration (`tymon/jwt-auth`)
 
 ### Option A — HS256 (Quick Start, Recommended for Development)
 
@@ -123,6 +145,8 @@ services/ip-management/storage/keys/
 └── jwt-public.pem
 ```
 
+Note: for some reason JWT_PRIVATE_KEY cannot be null, so I simply set it to 1.
+
 #### Step 3 — Configure `.env` for both services
 
 **Auth Service** (`services/auth/.env`):
@@ -168,7 +192,7 @@ cd services/auth && php artisan serve --port=8000
 cd services/ip-management && php artisan serve --port=8001
 ```
 
-The frontend (when added) will communicate exclusively with the API Gateway on `http://localhost:3000`.
+TODO: add frontend
 
 ---
 
@@ -187,6 +211,23 @@ php artisan test
 
 # Run a specific test class
 php artisan test --filter LoginTest
+```
+
+Tests use an in-memory SQLite database by default (configured in `phpunit.xml`) so no additional database setup is needed for testing.
+
+### IP Management (PHPUnit)
+
+```bash
+cd services/ip-management
+
+# Run all tests
+composer test
+
+# Or directly via PHPUnit
+php artisan test
+
+# Run a specific test class
+php artisan test --filter IndexTest
 ```
 
 Tests use an in-memory SQLite database by default (configured in `phpunit.xml`) so no additional database setup is needed for testing.
