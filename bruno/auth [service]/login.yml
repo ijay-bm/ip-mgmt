@@ -1,0 +1,23 @@
+info:
+  name: /login
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{URL}}{{AUTH_SERVICE_PATH}}/login"
+  body:
+    type: multipart-form
+    data:
+      - name: email
+        type: text
+        value: test@example.com
+      - name: password
+        type: text
+        value: password
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

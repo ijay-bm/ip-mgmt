@@ -1,0 +1,40 @@
+{
+  "printWidth": 120,
+  "tabWidth": 4,
+  "useTabs": false,
+  "trailingComma": "all",
+  "plugins": ["@prettier/plugin-php"],
+  "overrides": [
+    {
+      "files": "*.php",
+      "options": {
+        "phpVersion": "8.3",
+        "singleQuote": true,
+        "braceStyle": "per-cs",
+        "bracketSameLine": false,
+        "trailingCommaPHP": true
+      }
+    },
+    {
+      "files": ["*.css", "*.js", "*.ts", "*.vue", "*.jsx", "*.tsx"],
+      "options": {
+        "tabWidth": 2,
+        "singleQuote": true,
+        "semi": true,
+        "bracketSameLine": false
+      }
+    },
+    {
+      "files": ["**/routes/*.php"],
+      "options": {
+        "printWidth": 180
+      }
+    },
+    {
+      "files": ".prettierrc",
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
+}

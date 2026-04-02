@@ -18,6 +18,17 @@ request:
   headers:
     - name: Accept
       value: application/json
+  auth:
+    type: bearer
+    token: "{{TOKEN}}"
+  scripts:
+    - type: after-response
+      code: |-
+        const { access_token } = res.getBody()
+
+        if (access_token) {
+          bru.setEnvVar('TOKEN', access_token)
+        }
 bundled: false
 extensions:
   bruno:

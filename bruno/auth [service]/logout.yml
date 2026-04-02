@@ -1,11 +1,12 @@
 info:
-  name: ip management service test
+  name: /logout
   type: http
-  seq: 3
+  seq: 4
 
 http:
-  method: GET
-  url: "{{URL}}{{IP_MANAGEMENT_SERVICE_PATH}}"
+  method: POST
+  url: "{{URL}}{{AUTH_SERVICE_PATH}}/logout"
+  auth: inherit
 
 settings:
   encodeUrl: true
