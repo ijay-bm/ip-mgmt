@@ -93,4 +93,22 @@ class RefreshTest extends TestCase
 
         $this->withToken($token)->getJson(route('me'))->assertUnauthorized();
     }
+
+    public function test_session_id_persists_after_refresh(): void
+    {
+        // 1. Login to get a real token with a session_id
+        $loginResponse = $this->postJson(route('login'), [
+            'email' => $this->user->email,
+            'password' => 'password',
+        ]);
+
+        $oldSessionId = $loginResponse->json('session_id');
+        $oldToken = $loginResponse->json('access_token');
+
+        // 2. Refresh the token
+        $refreshResponse = $this->withToken($oldToken)->postJson(route('refresh'))->assertOk();
+
+        // 3. Assert the session_id remains the same [cite: 11, 52]
+        $this->assertEquals($oldSessionId, $refreshResponse->json('session_id'));
+    }
 }

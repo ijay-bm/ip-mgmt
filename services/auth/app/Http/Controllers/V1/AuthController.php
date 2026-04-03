@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Events\AuthLoggedIn;
+use App\Events\AuthLoggedOut;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,11 +21,15 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $credentials = request(['email', 'password']);
-
-        if (!($token = auth()->attempt($credentials))) {
+        if (!($token = auth()->attempt($request->only('email', 'password')))) {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
+
+        $user = auth()->user();
+
+        $sessionId = auth()->payload()->get('session_id');
+
+        event(new AuthLoggedIn($user, $sessionId, $request->ip(), $request->userAgent()));
 
         return $this->respondWithToken($token);
     }
@@ -39,8 +45,12 @@ class AuthController extends Controller
     /**
      * Log the user out (Invalidate the token).
      */
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
+        $sessionId = auth()->parseToken()->payload()->get('session_id');
+
+        event(new AuthLoggedOut(auth()->user(), $sessionId, $request->ip(), $request->userAgent()));
+
         auth()->logout();
 
         return response()->json(['message' => 'Successfully logged out']);

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
@@ -52,6 +53,7 @@ class User extends Authenticatable implements JWTSubject
             'name' => $this->name,
             'email' => $this->email,
             'roles' => $this->roles()->pluck('name')->toArray(),
+            'session_id' => Str::uuid()->toString(),
         ];
     }
 }

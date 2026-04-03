@@ -5,6 +5,7 @@ namespace Tests\Feature\Controllers\V1\AuthController;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class LoginTest extends TestCase
 {
@@ -17,12 +18,20 @@ class LoginTest extends TestCase
             'email' => 'john@doe.com',
         ]);
 
-        $this->postJson(route('login'), [
+        $response = $this->postJson(route('login'), [
             'email' => $user->email,
             'password' => 'password',
         ])
             ->assertOk()
             ->assertJsonStructure(['access_token', 'token_type', 'expires_in']);
+
+        $sessionId = JWTAuth::setToken($response->json('access_token'))->getPayload()->get('session_id');
+
+        $this->assertDatabaseHas('activity_log', [
+            'causer_id' => $user->id,
+            'event' => 'login',
+            'properties->session_id' => $sessionId,
+        ]);
     }
 
     public function test_unregistered_user_email_cannot_login(): void

@@ -18,12 +18,17 @@ class LogoutTest extends TestCase
             'email' => 'john@doe.com',
         ]);
 
-        $token = JWTAuth::fromUser($user);
+        $token = JWTAuth::claims(['session_id' => 'test-session'])->fromUser($user);
 
         $this->withToken($token)->postJson(route('logout'))->assertOk();
+
+        $this->assertDatabaseHas('activity_log', [
+            'causer_id' => $user->id,
+            'event' => 'logout',
+            'properties->session_id' => 'test-session',
+        ]);
     }
 
-    // public function testUnauthenticatedUserCannotLogout(): void
     public function test_unauthenticated_user_cannot_logout(): void
     {
         $this->postJson(route('logout'))->assertUnauthorized();
