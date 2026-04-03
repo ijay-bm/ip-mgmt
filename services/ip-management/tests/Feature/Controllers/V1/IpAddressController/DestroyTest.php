@@ -11,8 +11,10 @@ class DestroyTest extends TestCase
 {
     use RefreshDatabase;
 
-    private User $normalUser;
+    private string $normalUserToken;
+
     private User $superAdminUser;
+    private string $superAdminUserToken;
 
     private IpAddress $ipAddress;
 
@@ -20,30 +22,44 @@ class DestroyTest extends TestCase
     {
         parent::setUp();
 
-        $this->normalUser = new User([
-            'id' => 78,
-        ]);
+        $this->normalUserToken = $this->mintNormalUserToken();
 
-        $this->superAdminUser = new User([
-            'id' => 105,
-            'roles' => ['super-admin'],
-        ]);
+        $this->superAdminUser = $this->makeSuperAdminUser();
+        $this->superAdminUserToken = $this->mintToken($this->superAdminUser);
 
-        $this->ipAddress = IpAddress::factory()->create();
+        activity()->withoutLogs(function () {
+            $this->ipAddress = IpAddress::factory()->create();
+        });
     }
 
     public function test_normal_user_cant_delete_ip_address(): void
     {
-        $this->actingAs($this->normalUser)
+        $this->withToken($this->normalUserToken)
             ->deleteJson(route('ip-addresses.destroy', $this->ipAddress))
             ->assertForbidden();
     }
 
     public function test_super_admin_user_can_delete_ip_address(): void
     {
-        $this->actingAs($this->superAdminUser)
+        $this->withToken($this->superAdminUserToken)
             ->deleteJson(route('ip-addresses.destroy', $this->ipAddress))
             ->assertNoContent();
+
+        $this->assertDatabaseMissing('ip_addresses', [
+            'id' => $this->ipAddress->id,
+        ]);
+
+        $this->assertDatabaseHas('activity_log', [
+            'causer_id' => $this->superAdminUser->id,
+            'event' => 'deleted',
+            'subject_type' => IpAddress::class,
+            'subject_id' => $this->ipAddress->id,
+            'properties->session_id' => $this->superAdminUser->sessionId,
+            'properties->old->user_id' => $this->ipAddress->user_id,
+            'properties->old->ip_address' => $this->ipAddress->ip_address,
+            'properties->old->label' => $this->ipAddress->label,
+            'properties->old->comment' => $this->ipAddress->comment,
+        ]);
     }
 
     public function test_unauthenticated_user_cant_delete_ip_address(): void

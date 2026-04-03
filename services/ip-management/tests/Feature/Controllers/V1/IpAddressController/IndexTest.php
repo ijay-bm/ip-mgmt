@@ -3,7 +3,6 @@
 namespace Tests\Feature\Controllers\V1\IpAddressController;
 
 use App\Models\IpAddress;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,24 +10,25 @@ class IndexTest extends TestCase
 {
     use RefreshDatabase;
 
-    private User $user;
+    private string $userToken;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->user = new User([
-            'id' => 1,
-            'email' => 'jane@doe.com',
-            'name' => 'Jane Doe',
-        ]);
+        $this->userToken = $this->mintNormalUserToken();
 
-        IpAddress::factory()->count(5)->create();
+        activity()->withoutLogs(function () {
+            IpAddress::factory()->count(5)->create();
+        });
     }
 
     public function test_authenticated_user_can_get_ip_addresses(): void
     {
-        $this->actingAs($this->user)->getJson(route('ip-addresses.index'))->assertOk()->assertJsonCount(5, 'data');
+        $this->withToken($this->userToken)
+            ->getJson(route('ip-addresses.index'))
+            ->assertOk()
+            ->assertJsonCount(5, 'data');
     }
 
     public function test_unauthenticated_user_cant_get_ip_addresses(): void
@@ -38,7 +38,7 @@ class IndexTest extends TestCase
 
     public function test_payload_has_correct_structure(): void
     {
-        $this->actingAs($this->user)
+        $this->withToken($this->userToken)
             ->getJson(route('ip-addresses.index'))
             ->assertOk()
             ->assertJsonStructure([

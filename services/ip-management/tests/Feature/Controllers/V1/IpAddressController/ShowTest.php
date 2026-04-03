@@ -3,7 +3,6 @@
 namespace Tests\Feature\Controllers\V1\IpAddressController;
 
 use App\Models\IpAddress;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,7 +10,7 @@ class ShowTest extends TestCase
 {
     use RefreshDatabase;
 
-    private User $user;
+    private string $userToken;
 
     private IpAddress $ipAddress;
 
@@ -19,22 +18,24 @@ class ShowTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = new User([
+        $this->userToken = $this->mintNormalUserToken([
             'id' => 57,
             'email' => 'dovahkiin@dragonborn.com',
             'name' => 'Tiber Septim',
         ]);
 
-        $this->ipAddress = IpAddress::factory()->create([
-            'user_id' => $this->user->id,
-            'ip_address' => '123.456.789.012',
-            'label' => 'Cyrodiil',
-        ]);
+        activity()->withoutLogs(function () {
+            $this->ipAddress = IpAddress::factory()->create([
+                'user_id' => 57,
+                'ip_address' => '123.456.789.012',
+                'label' => 'Cyrodiil',
+            ]);
+        });
     }
 
     public function test_authenticated_user_can_get_ip_address(): void
     {
-        $this->actingAs($this->user)
+        $this->withToken($this->userToken)
             ->getJson(route('ip-addresses.show', $this->ipAddress))
             ->assertOk()
             ->assertJsonStructure([
@@ -44,11 +45,14 @@ class ShowTest extends TestCase
 
     public function test_user_can_get_another_users_ip_address(): void
     {
-        $ipAddressA = IpAddress::factory()->create([
-            'user_id' => 99,
-        ]);
+        // $ipAddressA = null;
+        $ipAddressA = activity()->withoutLogs(
+            fn() => IpAddress::factory()->create([
+                'user_id' => 99,
+            ]),
+        );
 
-        $this->actingAs($this->user)->getJson(route('ip-addresses.show', $ipAddressA))->assertOk();
+        $this->withToken($this->userToken)->getJson(route('ip-addresses.show', $ipAddressA))->assertOk();
     }
 
     public function test_unauthenticated_user_cant_get_ip_address(): void

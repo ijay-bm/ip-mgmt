@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\ServiceProvider;
+use Spatie\Activitylog\Facades\CauserResolver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,5 +24,7 @@ class AppServiceProvider extends ServiceProvider
         Auth::provider('jwt-user', function ($app, array $config) {
             return new JwtUserProvider();
         });
+
+        CauserResolver::resolveUsing(fn() => null);
     }
 }

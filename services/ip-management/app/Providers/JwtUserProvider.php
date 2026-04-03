@@ -15,14 +15,14 @@ class JwtUserProvider implements UserProvider
     /**
      * Called by JWT-Auth to find the user by the 'sub' claim.
      */
-    public function retrieveById($identifier)
+    public function retrieveById($identifier): ?User
     {
         try {
             $payload = JWTAuth::parseToken()->getPayload();
 
             $this->validatePayload($payload);
 
-            return new User($payload->toArray());
+            return $this->buildUser($payload);
         } catch (Exception $e) {
             return null;
         }
@@ -62,10 +62,21 @@ class JwtUserProvider implements UserProvider
         // *can switch to `passes`|`fails` for minmax but will need a boolean check in the caller
         Validator::make($payload->toArray(), [
             'id' => ['required', 'integer'],
-            'email' => ['required', 'email'],
             'name' => ['required', 'string'],
+            'email' => ['required', 'email'],
             'roles' => ['present', 'array'],
             'roles.*' => ['string'],
         ])->validate();
+    }
+
+    public function buildUser(Payload $payload): User
+    {
+        return new User(
+            id: $payload->get('id') ?? $payload->get('sub'),
+            name: $payload->get('name'),
+            email: $payload->get('email'),
+            roles: $payload->get('roles') ?? [],
+            sessionId: $payload->get('session_id'),
+        );
     }
 }
