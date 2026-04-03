@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+// TODO SoftDeletes?
 #[Fillable(['user_id', 'ip_address', 'label', 'comment'])]
 class IpAddress extends Model
 {

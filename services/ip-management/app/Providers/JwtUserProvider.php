@@ -6,7 +6,9 @@ use App\Models\User;
 use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
+use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Payload;
 
 class JwtUserProvider implements UserProvider
 {
@@ -18,14 +20,11 @@ class JwtUserProvider implements UserProvider
         try {
             $payload = JWTAuth::parseToken()->getPayload();
 
-            return new User([
-                'id' => $identifier,
-                'email' => $payload->get('email'),
-                'name' => $payload->get('name'),
-                'roles' => $payload->get('roles') ?? [],
-            ]);
+            $this->validatePayload($payload);
+
+            return new User($payload->toArray());
         } catch (Exception $e) {
-            return new User(['id' => $identifier]);
+            return null;
         }
     }
 
@@ -56,5 +55,17 @@ class JwtUserProvider implements UserProvider
     public function rehashPasswordIfRequired(Authenticatable $user, array $credentials, bool $force = false)
     {
         // No-op
+    }
+
+    public function validatePayload(Payload $payload)
+    {
+        // *can switch to `passes`|`fails` for minmax but will need a boolean check in the caller
+        Validator::make($payload->toArray(), [
+            'id' => ['required', 'integer'],
+            'email' => ['required', 'email'],
+            'name' => ['required', 'string'],
+            'roles' => ['present', 'array'],
+            'roles.*' => ['string'],
+        ])->validate();
     }
 }
