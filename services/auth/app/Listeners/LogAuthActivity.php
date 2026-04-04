@@ -18,9 +18,12 @@ class LogAuthActivity
         Activity::causedBy($event->user)
             ->performedOn($event->user)
             ->withProperties([
-                'session_id' => $event->sessionId,
                 'ip' => $event->ip,
-                'user_agent' => $event->userAgent ?? request()->userAgent(),
+                'user_agent' => $event->userAgent,
+                'session_id' => $event->sessionId,
+                'causer_name' => $event->user->name,
+                'causer_email' => $event->user->email,
+                'causer_roles' => $event->user->getRoleNames()->toArray(),
             ])
             ->event($isLogin ? 'login' : 'logout')
             ->log($isLogin ? 'User logged in' : 'User logged out');

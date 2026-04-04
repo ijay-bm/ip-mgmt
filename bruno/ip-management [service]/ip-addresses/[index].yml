@@ -5,7 +5,14 @@ info:
 
 http:
   method: GET
-  url: "{{URL}}{{IP_MANAGEMENT_SERVICE_PATH}}/ip-addresses"
+  url: "{{URL}}{{IP_MANAGEMENT_SERVICE_PATH}}/ip-addresses?per_page=20&page=1"
+  params:
+    - name: per_page
+      value: "20"
+      type: query
+    - name: page
+      value: "1"
+      type: query
   auth: inherit
 
 settings:

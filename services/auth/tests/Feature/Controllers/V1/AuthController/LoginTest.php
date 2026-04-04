@@ -41,7 +41,7 @@ class LoginTest extends TestCase
             'password' => 'password',
         ])
             ->assertUnauthorized()
-            ->assertJsonPath('error', 'Invalid credentials');
+            ->assertJsonPath('error', 'These credentials do not match our records.');
     }
 
     public function test_user_cannot_login_with_wrong_password(): void
@@ -56,6 +56,6 @@ class LoginTest extends TestCase
             'password' => 'yeet',
         ])
             ->assertUnauthorized()
-            ->assertJsonPath('error', 'Invalid credentials');
+            ->assertJsonPath('error', 'These credentials do not match our records.');
     }
 }

@@ -11,13 +11,13 @@ http:
     data:
       - name: ip_address
         type: text
-        value: 127.0.0.3
+        value: fe80::1ff:fe23:4567:890a
       - name: label
         type: text
-        value: Test
+        value: Dawnguard
       - name: comment
         type: text
-        value: ""
+        value: Allergic to Fangs
   auth: inherit
 
 settings:

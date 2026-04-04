@@ -23,10 +23,11 @@ abstract class TestCase extends BaseTestCase
     {
         $defaults = [
             'id' => fake()->numberBetween(1, 1000),
+            'type' => 'App\\Models\\User',
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'roles' => [],
-            'sessionId' => Str::random(40),
+            'sessionId' => Str::uuid()->toString(),
         ];
 
         $merged = array_merge($defaults, $overrides);
@@ -42,8 +43,8 @@ abstract class TestCase extends BaseTestCase
     protected function mintToken(User $user): string
     {
         $claims = [
-            'sub' => (string) $user->id,
-            'id' => $user->id,
+            'sub' => $user->id,
+            'user_type' => $user->type,
             'name' => $user->name,
             'email' => $user->email,
             'roles' => $user->roles,

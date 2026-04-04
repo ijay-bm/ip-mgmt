@@ -49,11 +49,16 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [
-            'id' => $this->getKey(),
+            'user_type' => $this->getMorphClass(),
             'name' => $this->name,
             'email' => $this->email,
-            'roles' => $this->roles()->pluck('name')->toArray(),
+            'roles' => $this->getRoleNames()->toArray(),
             'session_id' => Str::uuid()->toString(),
         ];
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super-admin');
     }
 }

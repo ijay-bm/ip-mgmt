@@ -22,7 +22,7 @@ class AuthController extends Controller
         ]);
 
         if (!($token = auth()->attempt($request->only('email', 'password')))) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+            return response()->json(['error' => __('auth.failed')], 401);
         }
 
         $user = auth()->user();
@@ -53,7 +53,7 @@ class AuthController extends Controller
 
         auth()->logout();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['message' => __('auth.logout.success')]);
     }
 
     /**

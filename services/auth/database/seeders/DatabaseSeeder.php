@@ -16,10 +16,45 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Role::create([
+        //     'name' => 'super-admin',
+        //     'guard_name' => 'api',
+        // ]);
 
+        // Role::create([
+        //     'name' => 'user',
+        //     'guard_name' => 'api',
+        // ]);
+
+        // $userA = User::factory()->create([
+        //     'name' => 'John Doe',
+        //     'email' => 'john@example.com',
+        // ]);
+        // $userA->assignRole('super-admin');
+
+        // $userB = User::factory()->create([
+        //     'name' => 'Jane Doe',
+        //     'email' => 'jane@example.com',
+        // ]);
+        // $userB->assignRole('user');
+
+        $this->createTestUsersAndRoles();
+    }
+
+    public function createTestUsersAndRoles()
+    {
         Role::create([
             'name' => 'super-admin',
+            'guard_name' => 'api',
+        ]);
+
+        Role::create([
+            'name' => 'user',
+            'guard_name' => 'api',
+        ]);
+
+        Role::create([
+            'name' => 'admin',
             'guard_name' => 'api',
         ]);
 
@@ -27,12 +62,24 @@ class DatabaseSeeder extends Seeder
             'name' => 'John Doe',
             'email' => 'john@example.com',
         ]);
-
         $userA->assignRole('super-admin');
 
-        User::factory()->create([
+        $userB = User::factory()->create([
             'name' => 'Jane Doe',
             'email' => 'jane@example.com',
         ]);
+        $userB->assignRole('admin', 'user');
+
+        $userC = User::factory()->create([
+            'name' => 'Tim',
+            'email' => 'tim@example.com',
+        ]);
+        $userC->assignRole('user');
+
+        $userD = User::factory()->create([
+            'name' => 'Lin',
+            'email' => 'lin@example.com',
+        ]);
+        $userD->assignRole('user');
     }
 }

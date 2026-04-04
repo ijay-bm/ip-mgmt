@@ -11,7 +11,19 @@ http:
     data:
       - name: email
         type: text
+        value: john@example.com
+      - name: email
+        type: text
         value: jane@example.com
+        disabled: true
+      - name: email
+        type: text
+        value: tim@example.com
+        disabled: true
+      - name: email
+        type: text
+        value: lin@example.com
+        disabled: true
       - name: password
         type: text
         value: password

@@ -11,16 +11,16 @@ http:
     data:
       - name: label
         type: text
-        value: New Label
+        value: New Label 3
       - name: comment
         type: text
-        value: ""
+        value: New Comment 3
   auth: inherit
 
 runtime:
   variables:
     - name: id
-      value: "2"
+      value: "5"
 
 settings:
   encodeUrl: true

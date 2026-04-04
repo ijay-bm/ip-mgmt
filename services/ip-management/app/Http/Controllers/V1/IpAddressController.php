@@ -18,7 +18,7 @@ class IpAddressController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        return IpAddressResource::collection(IpAddress::paginate($request->input('perPage', 10)));
+        return IpAddressResource::collection(IpAddress::paginate($request->input('per_page', 10)));
     }
 
     /**

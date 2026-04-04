@@ -60,22 +60,25 @@ class JwtUserProvider implements UserProvider
     public function validatePayload(Payload $payload)
     {
         // *can switch to `passes`|`fails` for minmax but will need a boolean check in the caller
+        // *only validate custom claims
         Validator::make($payload->toArray(), [
-            'id' => ['required', 'integer'],
+            'user_type' => ['required', 'string'],
             'name' => ['required', 'string'],
             'email' => ['required', 'email'],
             'roles' => ['present', 'array'],
             'roles.*' => ['string'],
+            'session_id' => ['required', 'string'],
         ])->validate();
     }
 
     public function buildUser(Payload $payload): User
     {
         return new User(
-            id: $payload->get('id') ?? $payload->get('sub'),
+            id: $payload->get('sub'),
+            type: $payload->get('user_type'),
             name: $payload->get('name'),
             email: $payload->get('email'),
-            roles: $payload->get('roles') ?? [],
+            roles: $payload->get('roles'),
             sessionId: $payload->get('session_id'),
         );
     }
