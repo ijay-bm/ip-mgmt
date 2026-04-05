@@ -5,6 +5,8 @@ namespace App\Http\Controllers\V1;
 use App\Events\AuthLoggedIn;
 use App\Events\AuthLoggedOut;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -21,7 +23,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (!($token = auth()->attempt($request->only('email', 'password')))) {
+        if (! ($token = auth()->attempt($request->only('email', 'password')))) {
             return response()->json(['error' => __('auth.failed')], 401);
         }
 
@@ -31,15 +33,15 @@ class AuthController extends Controller
 
         event(new AuthLoggedIn($user, $sessionId, $request->ip(), $request->userAgent()));
 
-        return $this->respondWithToken($token);
+        return $this->respondWithToken($token, $user);
     }
 
     /**
      * Get the authenticated User.
      */
-    public function me(): JsonResponse
+    public function me(): UserResource
     {
-        return response()->json(auth()->user());
+        return new UserResource(auth()->user());
     }
 
     /**
@@ -71,12 +73,13 @@ class AuthController extends Controller
     /**
      * Get the token array structure.
      */
-    protected function respondWithToken(string $token): JsonResponse
+    protected function respondWithToken(string $token, ?User $user = null): JsonResponse
     {
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60,
+            ...($user ? ['user' => new UserResource($user)] : []),
         ]);
     }
 }
