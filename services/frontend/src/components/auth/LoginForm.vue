@@ -63,7 +63,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { useApiErrorHandler } from "@/composables/useApiErrorHandler";
+import { useApiErrorHandler } from "../../composables/useApiErrorHandler";
 import { useAuthStore } from "../../stores/auth";
 
 const { login } = useAuthStore();

@@ -1,7 +1,7 @@
 import baseAxios from "axios";
 import { createAuthRefresh } from "axios-auth-refresh";
-import { useToasterStore } from "@/stores/toaster";
 import { useAuthStore } from "../stores/auth";
+import { useToasterStore } from "../stores/toaster";
 
 const axios = baseAxios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,

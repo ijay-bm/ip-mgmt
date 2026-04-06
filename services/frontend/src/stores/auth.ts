@@ -1,7 +1,7 @@
-import type { Token, User } from "@/types/Auth";
+import type { Token, User } from "../types/Auth";
 import { defineStore } from "pinia";
-import router from "@/router";
-import axios, { resetSessionState } from "@/services/axios";
+import router from "../router";
+import axios, { resetSessionState } from "../services/axios";
 
 type LoginResponse = Token & {
   user: User;

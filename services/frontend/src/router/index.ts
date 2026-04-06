@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
-import IpAddresses from "@/pages/audit-logs/IpAddresses.vue";
-import Users from "@/pages/audit-logs/Users.vue";
-import IpManagement from "@/pages/IpManagement.vue";
-import Login from "@/pages/Login.vue";
-import { useAuthStore } from "@/stores/auth";
+import IpAddresses from "../pages/audit-logs/IpAddresses.vue";
+import Users from "../pages/audit-logs/Users.vue";
+import IpManagement from "../pages/IpManagement.vue";
+import Login from "../pages/Login.vue";
+import { useAuthStore } from "../stores/auth";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
