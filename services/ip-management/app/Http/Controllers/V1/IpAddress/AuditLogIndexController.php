@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\V1;
+namespace App\Http\Controllers\V1\IpAddress;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ActivityLogResource;
 use App\Models\IpAddress;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -17,6 +18,18 @@ class AuditLogIndexController extends Controller
     {
         $logs = QueryBuilder::for(Activity::where('subject_type', IpAddress::class))
             ->allowedFilters(
+                AllowedFilter::callback(
+                    'search',
+                    fn(Builder $query, $value) => $query->where(
+                        fn(Builder $query) => $query
+                            ->orWhere('description', 'like', "%{$value}%")
+                            ->orWhere('properties->causer_name', 'like', "%{$value}%")
+                            ->orWhere('properties->causer_email', 'like', "%{$value}%")
+                            ->orWhere('properties->ip_address', 'like', "%{$value}%")
+                            ->orWhere('properties->label', 'like', "%{$value}%"),
+                    ),
+                ),
+
                 AllowedFilter::exact('event'),
 
                 AllowedFilter::exact('description'),
@@ -73,10 +86,10 @@ class AuditLogIndexController extends Controller
                     }
                 }),
 
-                AllowedFilter::callback('date_from', function ($query, $value) {
+                AllowedFilter::callback('created_at_from', function ($query, $value) {
                     $query->where('created_at', '>=', $value);
                 }),
-                AllowedFilter::callback('date_to', function ($query, $value) {
+                AllowedFilter::callback('created_at_to', function ($query, $value) {
                     $query->where('created_at', '<=', $value);
                 }),
             )

@@ -4,6 +4,7 @@ namespace Tests\Feature\Controllers\V1\AuthController;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -18,16 +19,23 @@ class MeTest extends TestCase
             'email' => 'john@doe.com',
         ]);
 
+        $role = Role::create(['name' => 'user']);
+
+        $user->assignRole($role);
+
         $token = JWTAuth::fromUser($user);
 
         $this->withToken($token)
             ->getJson(route('me'))
             ->assertOk()
-            ->assertJsonStructure(['id', 'name', 'email', 'created_at', 'updated_at'])
+            ->assertJsonStructure(['data' => ['id', 'name', 'email', 'roles']])
             ->assertJson([
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
+                'data' => [
+                    'id' => $user->id,
+                    'name' => 'John Doe',
+                    'email' => 'john@doe.com',
+                    'roles' => ['user'],
+                ],
             ]);
     }
 

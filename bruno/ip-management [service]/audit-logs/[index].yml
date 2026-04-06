@@ -47,11 +47,11 @@ http:
       value: bruno-runtime/3.2.0,PostmanRuntime/7.51.1
       type: query
       disabled: true
-    - name: filter[date_from]
+    - name: filter[created_at_from]
       value: "2026-04-03 15:36:00 "
       type: query
       disabled: true
-    - name: filter[date_to]
+    - name: filter[created_at_to]
       value: "2026-04-03 15:41:00 "
       type: query
       disabled: true

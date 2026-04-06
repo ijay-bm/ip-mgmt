@@ -7,9 +7,12 @@ use App\Http\Requests\StoreIpAddressRequest;
 use App\Http\Requests\UpdateIpAddressRequest;
 use App\Http\Resources\IpAddressResource;
 use App\Models\IpAddress;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class IpAddressController extends Controller
 {
@@ -18,7 +21,30 @@ class IpAddressController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        return IpAddressResource::collection(IpAddress::paginate($request->input('per_page', 10)));
+        $ipAddresses = QueryBuilder::for(IpAddress::class)
+            ->allowedFilters(
+                AllowedFilter::callback('search', fn (Builder $query, $value) => $query->search($value)),
+
+                AllowedFilter::callback('created_at_from', function ($query, $value) {
+                    $query->where('created_at', '>=', $value);
+                }),
+                AllowedFilter::callback('created_at_to', function ($query, $value) {
+                    $query->where('created_at', '<=', $value);
+                }),
+            )
+            ->allowedSorts(
+                'id',
+                'user_id',
+                'ip_address',
+                'label',
+                'comment',
+                'created_at',
+                'updated_at',
+            )
+            ->defaultSort('-created_at')
+            ->paginate($request->input('per_page', 10));
+
+        return IpAddressResource::collection($ipAddresses);
     }
 
     /**
