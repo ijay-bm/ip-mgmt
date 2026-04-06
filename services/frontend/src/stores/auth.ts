@@ -56,18 +56,19 @@ export const useAuthStore = defineStore("auth", {
     },
 
     async logout(callServer = true) {
-      try {
-        this.user = null;
-        if (callServer && this.accessToken) {
-          return await axios.post("/auth/logout");
-        }
-        return;
-      } catch {
-        // Silently fail
-      } finally {
-        this.token = null;
-        router.push({ path: "/login" });
+      if (callServer && this.accessToken) {
+        const token = this.accessToken;
+        axios
+          .post("/auth/logout", null, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          .catch(() => {});
       }
+
+      this.user = null;
+      this.token = null;
+
+      router.push({ path: "/login" });
     },
 
     async refresh() {
