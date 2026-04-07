@@ -8,7 +8,10 @@ export const useToasterStore = defineStore("toaster", {
 
   actions: {
     add(toast: Toast) {
-      this.queue.push(toast);
+      this.queue.push({
+        ...toast,
+        timeout: toast.timeout || 5000,
+      });
     },
   },
 });

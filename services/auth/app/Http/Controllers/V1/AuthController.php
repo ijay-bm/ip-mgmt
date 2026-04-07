@@ -23,7 +23,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (! ($token = auth()->attempt($request->only('email', 'password')))) {
+        if (!($token = auth()->attempt($request->only('email', 'password')))) {
             return response()->json(['error' => __('auth.failed')], 401);
         }
 
@@ -79,7 +79,7 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60,
-            ...($user ? ['user' => new UserResource($user)] : []),
+            ...$user ? ['user' => new UserResource($user)] : [],
         ]);
     }
 }

@@ -34,15 +34,18 @@ createAuthRefresh(
       useToasterStore().add({
         text: "Your session has expired, please log in again.",
         color: "error",
-        timeout: 4000,
       });
       useAuthStore().logout(false);
       throw error;
     }
   },
   {
-    shouldRefresh: (error) =>
-      !sessionDead && !error.config?.url?.includes("/auth/"),
+    shouldRefresh: (error) => {
+      const status = error?.response?.status;
+      const url = error?.config?.url || "";
+
+      return status === 401 && !sessionDead && !url.includes("/auth/");
+    },
   },
 );
 

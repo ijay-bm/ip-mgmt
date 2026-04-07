@@ -145,11 +145,14 @@ import DateRangeFilter from "../components/common/DateRangeFilter.vue";
 import IpAddressCreateDialog from "../components/ip-adress/IpAddressCreateDialog.vue";
 import IpAddressDeleteDialog from "../components/ip-adress/IpAddressDeleteDialog.vue";
 import IpAddressEditDialog from "../components/ip-adress/IpAddressEditDialog.vue";
+import { useApiErrorHandler } from "../composables/useApiErrorHandler";
 import { ipAddressResource } from "../resources/ip-address";
 import { useAuthStore } from "../stores/auth";
 import { formatDate } from "../utils/date";
 
 const { isSuperAdmin } = storeToRefs(useAuthStore());
+
+const { handle } = useApiErrorHandler();
 
 const headers = [
   { title: "ID", key: "id", nowrap: true },
@@ -237,6 +240,8 @@ async function callIndex(
 
     records.value = data || [];
     pagination.value = responsePagination || null;
+  } catch (error) {
+    handle(error);
   } finally {
     isLoading.value = false;
   }

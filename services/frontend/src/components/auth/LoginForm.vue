@@ -73,8 +73,8 @@ const isPasswordVisible = ref(false);
 const { handle } = useApiErrorHandler();
 
 const form = ref({
-  email: "",
-  password: "",
+  email: "john@example.com",
+  password: "password",
 });
 
 const errors = ref<Record<string, string[]>>({});

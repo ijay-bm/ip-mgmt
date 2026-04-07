@@ -15,7 +15,7 @@ const router = createRouter({
         return isAuthenticated ? "/ip-management" : "/login";
       },
     },
-    { path: "/login", component: Login },
+    { path: "/login", component: Login, meta: { guesOnly: true } },
     {
       path: "/ip-management",
       component: IpManagement,
@@ -40,6 +40,10 @@ router.beforeEach((to) => {
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     return { path: "/login" };
+  }
+
+  if (to.meta.guesOnly && isAuthenticated) {
+    return { path: "/ip-management" };
   }
 
   if (to.meta.requiresSuperAdmin && !isSuperAdmin) {

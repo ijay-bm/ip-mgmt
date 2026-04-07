@@ -294,7 +294,7 @@ const handleSearch = useDebounceFn(() => {
 const handleFilterChange = useDebounceFn(() => {
   currentPage.value = 1;
   callIndex(1, itemsPerPage.value, sortBy.value);
-}, 150);
+}, 300);
 
 const handleOptions = useDebounceFn(
   ({
