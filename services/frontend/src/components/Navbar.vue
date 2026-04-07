@@ -78,7 +78,7 @@
           <template #prepend>
             <v-icon>mdi-account</v-icon>
           </template>
-          <v-list-item-title>
+          <v-list-item-title class="text-disabled">
             {{ user?.email }}
           </v-list-item-title>
         </v-list-item>
