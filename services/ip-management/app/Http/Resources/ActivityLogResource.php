@@ -31,8 +31,8 @@ class ActivityLogResource extends JsonResource
                 'roles' => $this->getExtraProperty('causer_roles') ?? [],
             ],
 
-            'properties' => [
-                'session_id' => $this->getExtraProperty('session_id'),
+            'session' => [
+                'id' => $this->getExtraProperty('session_id'),
                 'ip' => $this->getExtraProperty('ip'),
                 'user_agent' => $this->getExtraProperty('user_agent'),
             ],
