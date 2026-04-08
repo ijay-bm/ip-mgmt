@@ -40,7 +40,7 @@ class StoreTest extends TestCase
             ])
             ->assertCreated()
             ->assertJsonStructure([
-                'data' => ['id', 'user_id', 'ip_address', 'label', 'comment', 'created_at', 'updated_at'],
+                'data' => ['id', 'user_id', 'ip_address', 'label', 'comment', 'is_owner', 'created_at', 'updated_at'],
             ]);
 
         $this->assertDatabaseHas('ip_addresses', [

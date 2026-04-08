@@ -16,6 +16,7 @@ abstract class TestCase extends BaseTestCase
         config([
             'jwt.algo' => 'HS256',
             'jwt.secret' => Str::random(64),
+            'jwt.ttl' => 60,
         ]);
     }
 

@@ -43,7 +43,7 @@ class IndexTest extends TestCase
             ->assertOk()
             ->assertJsonStructure([
                 'data' => [
-                    '*' => ['id', 'user_id', 'ip_address', 'label', 'comment', 'created_at', 'updated_at'],
+                    '*' => ['id', 'user_id', 'ip_address', 'label', 'comment', 'is_owner', 'created_at', 'updated_at'],
                 ],
                 'links' => ['first', 'last', 'prev', 'next'],
                 'meta' => [
