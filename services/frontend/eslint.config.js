@@ -19,6 +19,7 @@ export default vuetify(
       // "perfectionist/sort-imports": "off",
       // "perfectionist/sort-named-imports": "off",
       "prettier/prettier": "error",
+      "unicorn/prefer-set-has": "off",
     },
   },
   prettier,

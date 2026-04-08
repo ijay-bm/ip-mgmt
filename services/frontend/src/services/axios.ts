@@ -3,6 +3,8 @@ import { createAuthRefresh } from "axios-auth-refresh";
 import { useAuthStore } from "../stores/auth";
 import { useToasterStore } from "../stores/toaster";
 
+const nonRefreshUrls = ["/auth/refresh", "/auth/login", "/auth/logout"];
+
 const axios = baseAxios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
 });
@@ -44,7 +46,7 @@ createAuthRefresh(
       const status = error?.response?.status;
       const url = error?.config?.url || "";
 
-      return status === 401 && !sessionDead && !url.includes("/auth/");
+      return status === 401 && !sessionDead && !nonRefreshUrls.includes(url);
     },
   },
 );
