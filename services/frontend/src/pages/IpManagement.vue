@@ -97,6 +97,7 @@
     <template #item.actions="{ item }">
       <div class="d-flex ga-1">
         <v-btn
+          v-if="item.is_owner || isSuperAdmin"
           density="compact"
           icon
           variant="text"

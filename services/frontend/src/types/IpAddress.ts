@@ -4,6 +4,7 @@ export type IpAddress = {
   ip_address: string;
   label: string;
   comment: string;
+  is_owner: boolean;
   created_at: string;
   updated_at: string;
 };
