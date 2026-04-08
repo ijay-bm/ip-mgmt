@@ -1,0 +1,23 @@
+FROM node:22-alpine
+
+ARG UID=1000
+ARG GID=1000
+
+RUN delgroup node 2>/dev/null || true \
+ && deluser node 2>/dev/null || true \
+ && addgroup -g ${GID} node \
+ && adduser -u ${UID} -G node -s /bin/sh -D node
+
+RUN apk add --no-cache gettext
+
+RUN mkdir -p /var/www/html && chown ${UID}:${GID} /var/www/html
+
+WORKDIR /var/www/html/
+
+COPY --chown=${UID}:${GID} docker-entrypoint.local.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.local.sh
+
+USER node
+
+ENTRYPOINT ["docker-entrypoint.local.sh"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

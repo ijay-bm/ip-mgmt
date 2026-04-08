@@ -10,7 +10,6 @@ class ServiceProxy {
       url: env.AUTH_SERVICE_URL,
       pathRewrite: { "^/": "/api/v1/auth/" },
       name: "auth"
-      // timeout: 5000 ?
     },
     {
       path: "/api/v1/ip-management/",
@@ -26,7 +25,6 @@ class ServiceProxy {
       changeOrigin: true,
       pathRewrite: service.pathRewrite,
       timeout: service.timeout || env.DEFAULT_TIMEOUT,
-      // logger: !TODO
       on: {
         error: ServiceProxy.handleProxyError,
         proxyReq: ServiceProxy.handleProxyRequest,
@@ -52,6 +50,9 @@ class ServiceProxy {
   }
 
   private static handleProxyRequest(proxyReq: any, req: any): void {
+    const clientIp = req.socket?.remoteAddress ?? "";
+    proxyReq.setHeader("X-Forwarded-For", clientIp);
+
     console.info(`Proxy request for ${req.path}:`, proxyReq.path);
   }
 
@@ -63,7 +64,6 @@ class ServiceProxy {
     ServiceProxy.serviceConfigs.forEach((service) => {
       const proxyOptions = ServiceProxy.createProxyOptions(service);
       app.use(service.path, createProxyMiddleware(proxyOptions));
-      console.info(`Configured proxy for ${service.name} at ${service.path}`);
     });
   }
 }
