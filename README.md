@@ -1,3 +1,42 @@
+# IP Management — Setup Guide
+
+This project consists of four services:
+
+- **API Gateway** — Node.js/Express reverse proxy
+- **Auth Service** — Laravel app handling authentication & user audit logs
+- **IP Management Service** — Laravel app handling IP address CRUD & audit logs
+- **Frontend** — Vue 3 / Vuetify SPA
+
+---
+
+## Quick Start (Docker)
+
+If you have Docker installed and want to get the entire stack up and running immediately without manual configuration:
+
+```bash
+docker compose -f docker-compose.local.yml up -d
+```
+
+This will spin up all required services (API Gateway, Auth Service, IP Management Service, database, and Redis) in the background.
+
+Once the containers are healthy, you can access the application at:
+
+- Frontend: http://localhost:5173
+- API Gateway: http://localhost:3000
+
+### Some Test Credentials
+
+You can log in using the following test accounts:
+
+| Role        | Email            | Password |
+| ----------- | ---------------- | -------- |
+| Super Admin | john@example.com | password |
+| User        | jane@example.com | password |
+| User        | tim@example.com  | password |
+| User        | lin@example.com  | password |
+
+---
+
 ## 1. API Gateway Setup
 
 ```bash
@@ -56,7 +95,7 @@ php artisan key:generate
 # Run database migrations
 php artisan migrate
 
-# Seed the database (for users and roles. See DatabaseSeeder.php)
+# Seed the database (creates roles, and test users — see DatabaseSeeder.php)
 php artisan db:seed
 ```
 
@@ -70,8 +109,6 @@ php artisan serve --port=8000
 
 ## 3. IP Management Service Setup
 
-A second independent Laravel application with its own database.
-
 ```bash
 cd services/ip-management
 
@@ -79,7 +116,8 @@ composer install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate
-# Seed the database (for IP records)
+
+# Seed with 100 sample IP address records
 php artisan db:seed
 ```
 
@@ -91,11 +129,42 @@ php artisan serve --port=8001
 
 ---
 
-## 4. JWT Configuration (`tymon/jwt-auth`)
+## 4. Frontend Setup
+
+```bash
+cd services/frontend
+npm install
+```
+
+### Environment Variables
+
+Copy or create a `.env` file in `services/frontend/`:
+
+```env
+VITE_BACKEND_URL=http://localhost:3000/api/v1
+```
+
+### Running the Frontend
+
+```bash
+npm run dev
+```
+
+The frontend is a Vue 3 + Vuetify SPA. It communicates exclusively with the API Gateway. Features include:
+
+- Login / logout
+- IP address management (create, edit, delete)
+- Audit log views for users and IP addresses (super-admin only)
+
+---
+
+## 5. JWT Configuration (`tymon/jwt-auth`)
+
+Both Laravel services use `tymon/jwt-auth`. The Auth Service **signs** tokens; the IP Management Service **verifies** them only.
 
 ### Option A — HS256 (Quick Start, Recommended for Development)
 
-HS256 uses a single secret key shared across both services. This is the fastest way to get running.
+HS256 uses a single shared secret across both services.
 
 **In the Auth Service:**
 
@@ -113,40 +182,29 @@ JWT_ALGO=HS256
 JWT_SECRET=<paste_the_same_secret_here>
 ```
 
-Both services will sign and verify tokens with the same key.
-
 ---
 
-### Option B — RS256 (Asymmetric Keys)
+### Option B — RS256 (Asymmetric Keys, Recommended for Production)
 
 #### Step 1 — Generate the key pair
 
 ```bash
-# Generate a 4096-bit RSA private key
 openssl genrsa -out jwt-private.pem 4096
-
-# Derive the public key from it
 openssl rsa -in jwt-private.pem -pubout -out jwt-public.pem
 ```
 
-#### Step 2 — Store the keys
+#### Step 2 — Place the keys
 
-Place both files in the Auth Service's designated keys directory:
+The Auth Service needs both keys; the IP Management Service needs the public key only.
 
 ```
 services/auth/storage/keys/
 ├── jwt-private.pem
 └── jwt-public.pem
-```
 
-The IP Management Service only needs the **public key** to verify tokens, so copy it there as well:
-
-```
 services/ip-management/storage/keys/
 └── jwt-public.pem
 ```
-
-Note: for some reason JWT_PRIVATE_KEY cannot be null, so I simply set it to 1.
 
 #### Step 3 — Configure `.env` for both services
 
@@ -156,31 +214,37 @@ Note: for some reason JWT_PRIVATE_KEY cannot be null, so I simply set it to 1.
 JWT_ALGO=RS256
 JWT_PRIVATE_KEY=file:///absolute/path/to/services/auth/storage/keys/jwt-private.pem
 JWT_PUBLIC_KEY=file:///absolute/path/to/services/auth/storage/keys/jwt-public.pem
+JWT_TTL=15
+JWT_REFRESH_TTL=10080
 ```
 
 **IP Management Service** (`services/ip-management/.env`):
 
 ```env
 JWT_ALGO=RS256
+JWT_PRIVATE_KEY=1
 JWT_PUBLIC_KEY=file:///absolute/path/to/services/ip-management/storage/keys/jwt-public.pem
 ```
 
+> **Note:** `JWT_PRIVATE_KEY` cannot be null due to a `tymon/jwt-auth` requirement. Setting it to `1` is an accepted workaround for the IP Management Service, which only verifies tokens.
+
 ---
 
-## 5. Database Setup
+## 6. Database Setup
 
-Run `docker compose up` to create the database, else you can creaste your own and adjust each service's `.env` file.
+Both Laravel services use **MariaDB** and **Redis** (for caching).
 
-Then run migrations per service:
+If you prefer your own database instances, update the `DB_*` and `REDIS_*` variables in each service's `.env` accordingly.
+
+Then run migrations for each service:
 
 ```bash
 cd services/auth && php artisan migrate
 cd services/ip-management && php artisan migrate
 ```
-
 ---
 
-## 6. Running All Services Together
+## 7. Running All Services Together
 
 ```bash
 # Terminal 1 — API Gateway
@@ -191,13 +255,16 @@ cd services/auth && php artisan serve --port=8000
 
 # Terminal 3 — IP Management Service
 cd services/ip-management && php artisan serve --port=8001
-```
 
-TODO: add frontend
+# Terminal 4 — Frontend
+cd services/frontend && npm run dev
+```
 
 ---
 
-## 7. Running Tests
+## 8. Running Tests
+
+Tests for both Laravel services use an in-memory SQLite database by default (configured in `phpunit.xml`) — no extra database setup required.
 
 ### Auth Service (PHPUnit)
 
@@ -207,16 +274,14 @@ cd services/auth
 # Run all tests
 composer test
 
-# Or directly via PHPUnit
+# Or directly via Artisan
 php artisan test
 
 # Run a specific test class
 php artisan test --filter LoginTest
 ```
 
-Tests use an in-memory SQLite database by default (configured in `phpunit.xml`) so no additional database setup is needed for testing.
-
-### IP Management (PHPUnit)
+### IP Management Service (PHPUnit)
 
 ```bash
 cd services/ip-management
@@ -224,15 +289,9 @@ cd services/ip-management
 # Run all tests
 composer test
 
-# Or directly via PHPUnit
+# Or directly via Artisan
 php artisan test
 
 # Run a specific test class
 php artisan test --filter IndexTest
 ```
-
-Tests use an in-memory SQLite database by default (configured in `phpunit.xml`) so no additional database setup is needed for testing.
-
----
-
-TODO: revisit doc once dockerized

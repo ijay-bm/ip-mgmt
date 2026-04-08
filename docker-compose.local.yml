@@ -1,9 +1,31 @@
 name: ip-mgmt
 
+x-build-args: &build-args
+  args:
+    UID: ${UID:-1000}
+    GID: ${GID:-1000}
+
 services:
+  keygen:
+    image: alpine
+    container_name: keygen
+    volumes:
+      - jwt-keys:/keys
+    command: >
+      sh -c "
+        apk add --no-cache openssl &&
+        mkdir -p /keys &&
+        openssl genrsa -out /keys/jwt-private.pem 4096 &&
+        openssl rsa -in /keys/jwt-private.pem -pubout -out /keys/jwt-public.pem &&
+        chmod 600 /keys/jwt-private.pem &&
+        chmod 644 /keys/jwt-public.pem &&
+        chown 1000:1000 /keys/jwt-private.pem /keys/jwt-public.pem
+      "
+    networks: []
+
   mariadb:
     image: mariadb:11.4
-    container_name: ip-mgmt-db
+    container_name: mariadb
     environment:
       MYSQL_ROOT_PASSWORD: root
       AUTH_DB: auth_db
@@ -13,19 +35,129 @@ services:
       IP_MANAGEMENT_USER: ip_management_user
       IP_MANAGEMENT_PASS: ip_management_password
     volumes:
-      - mariadb_data:/var/lib/mysql
-      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+      - mariadb-data:/var/lib/mysql
+      - ./docker/scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    networks:
+      - database-network
     ports:
       - "3306:3306"
 
   redis:
     image: redis:7.4-alpine
-    container_name: shared-redis
+    container_name: redis
+    volumes:
+      - redis-data:/data
+    networks:
+      - database-network
     ports:
       - "6379:6379"
+
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile.local
+      <<: *build-args
+    container_name: frontend
+    ports:
+      - "5173:5173"
     volumes:
-      - redis_data:/data
+      - ./services/frontend:/var/www/html/
+      # - frontend-node-modules:/var/www/html/node_modules
+    env_file:
+      - ./docker/envs/frontend/.env
+    networks:
+      - public-network
+
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile.local
+      <<: *build-args
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./services/api-gateway:/var/www/html/
+      # - api-gateway-node-modules:/var/www/html/node_modules
+    env_file:
+      - ./docker/envs/api-gateway/.env
+    networks:
+      - public-network
+      - gateway-network
+    depends_on:
+      auth-service:
+        condition: service_started
+      ip-management-service:
+        condition: service_started
+
+  auth-service:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile.local
+      <<: *build-args
+    container_name: auth-service
+    volumes:
+      - ./services/auth:/var/www/html/
+      - jwt-keys:/var/www/html/storage/keys:ro
+      # - auth-vendor:/var/www/html/vendor
+    environment:
+      TRUSTED_PROXIES: 10.10.10.0/24
+    env_file:
+      - ./docker/envs/auth/.env
+    networks:
+      - gateway-network
+      - database-network
+    depends_on:
+      keygen:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_started
+      redis:
+        condition: service_started
+
+  ip-management-service:
+    build:
+      context: ./services/ip-management
+      dockerfile: Dockerfile.local
+      <<: *build-args
+    container_name: ip-management-service
+    volumes:
+      - ./services/ip-management:/var/www/html/
+      - jwt-keys:/var/www/html/storage/keys:ro
+      # - ip-management-vendor:/var/www/html/vendorenvironment:
+    environment:
+      TRUSTED_PROXIES: 10.10.10.0/24
+    env_file:
+      - ./docker/envs/ip-management/.env
+    networks:
+      - gateway-network
+      - database-network
+    depends_on:
+      keygen:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_started
+      redis:
+        condition: service_started
+
+networks:
+  public-network:
+    driver: bridge
+  gateway-network:
+    driver: bridge
+    internal: false # false because of dependency installs
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24
+  database-network:
+    driver: bridge
+    internal: false # false because of dependency installs
 
 volumes:
-  mariadb_data:
-  redis_data:
+  mariadb-data:
+  redis-data:
+  jwt-keys:
+  # frontend-node-modules:
+  # api-gateway-node-modules:
+  # auth-vendor:
+  # ip-management-vendor:

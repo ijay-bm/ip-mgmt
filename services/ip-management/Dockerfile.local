@@ -1,0 +1,29 @@
+FROM php:8.3-fpm-alpine
+
+ARG UID=1000
+ARG GID=1000
+
+WORKDIR /var/www/html/
+
+RUN apk add --no-cache \
+    bash curl unzip git zip gettext \
+    libpng-dev libjpeg-turbo-dev freetype-dev \
+    oniguruma-dev libxml2-dev \
+    pcre-dev $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd \
+    && apk del pcre-dev $PHPIZE_DEPS \
+    && deluser www-data \
+    && addgroup -g ${GID} www-data \
+    && adduser -u ${UID} -G www-data -s /bin/sh -D www-data
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+COPY ./docker-entrypoint.local.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.local.sh
+
+USER www-data
+
+ENTRYPOINT ["docker-entrypoint.local.sh"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]

@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-// TODO SoftDeletes?
 #[Fillable(['user_id', 'ip_address', 'label', 'comment'])]
 class IpAddress extends Model
 {
